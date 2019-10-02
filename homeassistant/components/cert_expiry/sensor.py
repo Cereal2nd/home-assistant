@@ -108,10 +108,22 @@ class SSLCertificate(Entity):
             _LOGGER.error("Connection timeout with server: %s", self.server_name)
             self._available = False
             return
+        except ConnectionRefusedError:
+            _LOGGER.error(
+                "Got a connection refused error from %s:%s",
+                self.server_name,
+                self.server_port,
+            )
+            self._available = False
+            return
         except OSError:
             _LOGGER.error(
                 "Cannot fetch certificate from %s", self.server_name, exc_info=1
             )
+            self._available = False
+            return
+        except Exception as excep:  # pylint: disable=W0703
+            _LOGGER.error("Got an error: %s", excep)
             self._available = False
             return
 
